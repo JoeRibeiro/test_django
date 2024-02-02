@@ -194,32 +194,30 @@ nclasses = len(get_unique_classes(dataset_dir, subsetsubfolder))
 
 
 
-def create_training_config(nclasses):
-    class TrainingConfig(Config):
-        """Configuration for training."""
-        # Give the configuration a recognizable name
-        NAME = "Training"
-        # Train on 1 GPU and 2 images per GPU. Batch size is 2 (GPUs * images/GPU).
-        GPU_COUNT = 1
-        IMAGES_PER_GPU = 2
-        # Number of classes (including background)
-        NUM_CLASSES = 1 + nclasses  # background + n fish
-        # Use small images for faster training. Set the limits of the small side
-        # the large side, and that determines the image shape.
-        IMAGE_MIN_DIM = 800
-        IMAGE_MAX_DIM = 1280
-        # Use smaller anchors because our image and objects are small
-        RPN_ANCHOR_SCALES = (40, 80, 160, 320, 640)  # anchor side in pixels
-        # Reduce training ROIs per image because the images are small and have
-        # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
-        TRAIN_ROIS_PER_IMAGE = 25
-        # Use a small epoch since the data is simple
-        STEPS_PER_EPOCH = 100
-        # use small validation steps since the epoch is small
-        VALIDATION_STEPS = 5
-    return TrainingConfig()
+class TrainingConfig(Config):
+    """Configuration for training."""
+    # Give the configuration a recognizable name
+    NAME = "Training"
+    # Train on 1 GPU and 2 images per GPU. Batch size is 2 (GPUs * images/GPU).
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 2
+    # Number of classes (including background)
+    NUM_CLASSES = 1 + nclasses  # background + n fish
+    # Use small images for faster training. Set the limits of the small side
+    # the large side, and that determines the image shape.
+    IMAGE_MIN_DIM = 800
+    IMAGE_MAX_DIM = 1280
+    # Use smaller anchors because our image and objects are small
+    RPN_ANCHOR_SCALES = (40, 80, 160, 320, 640)  # anchor side in pixels
+    # Reduce training ROIs per image because the images are small and have
+    # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
+    TRAIN_ROIS_PER_IMAGE = 25
+    # Use a small epoch since the data is simple
+    STEPS_PER_EPOCH = 100
+    # use small validation steps since the epoch is small
+    VALIDATION_STEPS = 5
 
-config = create_training_config(nclasses)
+config = TrainingConfig()
 config.display()
 
 
@@ -262,7 +260,7 @@ model.keras_model.save_weights(model_path)
 
 
 # Looking at performance on new/test data
-class InferenceConfig(ShapesConfig):
+class InferenceConfig(TrainingConfig):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
 
@@ -297,6 +295,17 @@ visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id,
 
 results = model.detect([original_image], verbose=1)
 
+
+def get_ax(rows=1, cols=1, size=8):
+    """Return a Matplotlib Axes array to be used in
+    all visualizations in the notebook. Provide a
+    central point to control graph sizes.
+    Change the default size attribute to control the size
+    of rendered images
+    """
+    _, ax = plt.subplots(rows, cols, figsize=(size*cols, size*rows))
+    return ax
+
 r = results[0]
 visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'], 
                             dataset_test.class_names, r['scores'], ax=get_ax())
@@ -320,5 +329,5 @@ for image_id in image_ids:
         utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
                          r["rois"], r["class_ids"], r["scores"], r['masks'])
     APs.append(AP)
-    
+
 print("mAP: ", np.mean(APs))
