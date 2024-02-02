@@ -18,6 +18,7 @@ python setup.py install
 pip install pycocotools-windows
 # Also maskRCNN is breaking without:
 pip install h5py==2.10.0
+pip install skikit-image=0.16.2
 
 .py file usage:
 python "C:\Users\JR13\OneDrive - CEFAS\My onedrive documents\test_django\dump_frames.py"
