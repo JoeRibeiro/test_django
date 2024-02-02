@@ -16,6 +16,7 @@ cd "C:\Users\JR13\OneDrive - CEFAS\My onedrive documents\test_django\maskrcnn\Ma
 python setup.py install
 # For maskcsnn, Coco needs to be the windows version, the default is not supported and you might need to install visual studio build tools
 pip install pycocotools-windows
+# Also maskRCNN is breaking without:
 pip install h5py==2.10.0
 
 .py file usage:
