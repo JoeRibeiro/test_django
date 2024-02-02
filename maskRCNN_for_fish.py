@@ -52,6 +52,7 @@ class FishDataset(utils.Dataset):
     def load_fish_dataset(self, dataset_dir, subsetsubfolder, split_ratio=0.8, is_training=True):
         # Add classes (adjust based on your dataset)
         self.add_class("fish", 1, "fish")
+        self.add_class("other", 2, "other")
         # Define data directory
         data_dir = os.path.join(dataset_dir, subsetsubfolder)
         # List all files in the data directory
@@ -84,8 +85,10 @@ class FishDataset(utils.Dataset):
             else:
                 continue  # Skip this image if not in the desired split
             # Add image to dataset
+            class_name = data['labels'][0]['label_class'].lower()  # Assuming the class information is in the first label
+            print(class_name)
             self.add_image(
-                "fish",
+                class_name,
                 image_id=image_id,
                 path=image_path,
                 width=width,
@@ -97,7 +100,8 @@ class FishDataset(utils.Dataset):
         polygons = []
         for label in labels:
             class_name = label.get('label_class')  # Use get to handle null gracefully
-            if class_name and class_name.lower() == 'fish':  # Check for a valid class name
+            valid_classes = ['fish', 'other']
+            if class_name and class_name.lower() in valid_classes:
                 # Extract polygon coordinates
                 regions = label.get('regions', [])  # Empty list if 'regions' is not present
                 for region in regions:
@@ -108,7 +112,9 @@ class FishDataset(utils.Dataset):
         # Override this method to load pixel-wise masks
         image_info = self.image_info[image_id]
         # Skip if not a 'fish' source
-        if image_info["source"] != "fish":
+        valid_classes = ['fish', 'other']
+        print(image_info["source"])
+        if image_info["source"] not in valid_classes:
             return super(self.__class__, self).load_mask(image_id)
         masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],
                          dtype=np.uint8)
