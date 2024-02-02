@@ -86,7 +86,6 @@ class FishDataset(utils.Dataset):
                 continue  # Skip this image if not in the desired split
             # Add image to dataset
             class_name = data['labels'][0]['label_class'].lower()  # Assuming the class information is in the first label
-            print(class_name)
             self.add_image(
                 class_name,
                 image_id=image_id,
@@ -113,7 +112,6 @@ class FishDataset(utils.Dataset):
         image_info = self.image_info[image_id]
         # Skip if not a 'fish' source
         valid_classes = ['fish', 'other']
-        print(image_info["source"])
         if image_info["source"] not in valid_classes:
             return super(self.__class__, self).load_mask(image_id)
         masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],
