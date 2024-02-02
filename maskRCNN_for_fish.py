@@ -60,55 +60,51 @@ class ShapesConfig(Config):
     """
     # Give the configuration a recognizable name
     NAME = "shapes"
-
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
     GPU_COUNT = 1
     IMAGES_PER_GPU = 8
-
     # Number of classes (including background)
     NUM_CLASSES = 1 + 3  # background + 3 shapes
-
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
     IMAGE_MIN_DIM = 128
     IMAGE_MAX_DIM = 128
-
     # Use smaller anchors because our image and objects are small
     RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels
-
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
     TRAIN_ROIS_PER_IMAGE = 32
-
     # Use a small epoch since the data is simple
     STEPS_PER_EPOCH = 100
-
     # use small validation steps since the epoch is small
     VALIDATION_STEPS = 5
-    
+
 config = ShapesConfig()
 config.display()
-
-
 
 
 import os
 import json
 import numpy as np
 import skimage.draw
-from PIL import Image  # Pillow library
 from mrcnn import utils
+from PIL import Image  # Pillow library
 
 class FishDataset(utils.Dataset):
-    def load_fish_dataset(self, dataset_dir, subset):
+    def __init__(self):
+        super().__init__()
+        self.num_train = 0  # Initialize as an instance variable
+    def load_fish_dataset(self, dataset_dir, subset, split_ratio=0.8):
         # Add classes (adjust based on your dataset)
         self.add_class("fish", 1, "fish")
         # Define data directory
         data_dir = os.path.join(dataset_dir, subset)
         # List all files in the data directory
-        files = [f for f in os.listdir(data_dir) if f.endswith('.json')]
-        for json_file in files:
+        files = [f for f in os.listdir(data_dir) if f.endswith('.json') and f != 'schema.json']
+        # Calculate the number of files for training based on the split ratio
+        self.num_train = int(len(files) * split_ratio)
+        for i, json_file in enumerate(files):
             # Load JSON file
             with open(os.path.join(data_dir, json_file)) as f:
                 data = json.load(f)
@@ -118,6 +114,11 @@ class FishDataset(utils.Dataset):
             # Get image width and height
             image = Image.open(image_path)
             width, height = image.size
+            # Determine if the image is for training or testing
+            if i < self.num_train:
+                split = "train"
+            else:
+                split = "test"
             # Add image to dataset
             self.add_image(
                 "fish",
@@ -125,18 +126,17 @@ class FishDataset(utils.Dataset):
                 path=image_path,
                 width=width,
                 height=height,
-                polygons=self.parse_polygons(data['labels'])
+                polygons=self.parse_polygons(data['labels']),
+                split=split  # Add split information to image metadata
             )
     def parse_polygons(self, labels):
         polygons = []
         for label in labels:
-            class_name = label['label_class']
-            if class_name == 'fish':  # Adjust based on your class labels
-                print("Processing label: ", label)
+            class_name = label.get('label_class')  # Use get to handle null gracefully
+            if class_name and class_name.lower() == 'fish':  # Check for a valid class name
                 # Extract polygon coordinates
                 regions = label.get('regions', [])  # Empty list if 'regions' is not present
                 for region in regions:
-                    print("Processing region: ", region)
                     polygon = [(int(pt['x']), int(pt['y'])) for pt in region]
                     polygons.append(polygon)
         return polygons
@@ -152,21 +152,23 @@ class FishDataset(utils.Dataset):
             rr, cc = skimage.draw.polygon(np.array(polygon)[:, 1], np.array(polygon)[:, 0])
             masks[rr, cc, i] = 1
         return masks, class_ids
-    def load_fish(self, image_id):
-        # Load the fish annotations for a specific image
-        image_info = self.image_info[image_id]
-        fish_polygons = image_info.get("polygons", [])
-        return fish_polygons
 
 # Example usage
 dataset = FishDataset()
-dataset.load_fish_dataset("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/stills", "")
+dataset.load_fish_dataset("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/stills", "", split_ratio=0.8)
 dataset.prepare()
 
-# Access annotations for a specific image
-image_id = 0
-image_info = dataset.image_info[image_id]
-print("Image ID: ", image_info["id"], "\nPolygons: ", image_info["polygons"])
+# Access annotations for a specific image in the training set
+train_image_id = 0
+train_image_info = dataset.image_info[train_image_id]
+print("Training Image ID: ", train_image_info["id"], "\nPolygons: ", train_image_info["polygons"])
 
+# Access annotations for all images in the training set
+for i in range(dataset.num_train):
+    train_image_info = dataset.image_info[i]
+    print("Training Image ID: ", train_image_info["id"], "\nPolygons: ", train_image_info["polygons"])
 
-
+# Access annotations for all images in the testing set
+for i in range(dataset.num_train, len(dataset.image_info)):
+    test_image_info = dataset.image_info[i]
+    print("Testing Image ID: ", test_image_info["id"], "\nPolygons: ", test_image_info["polygons"])
