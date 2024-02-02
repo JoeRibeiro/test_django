@@ -22,5 +22,5 @@ pip install skikit-image=0.16.2
 
 .py file usage:
 python "C:\Users\JR13\OneDrive - CEFAS\My onedrive documents\test_django\dump_frames.py"
-python "C:\Users\JR13\OneDrive - CEFAS\My onedrive documents\test_django\maskRCNN.py"
+python "C:\Users\JR13\OneDrive - CEFAS\My onedrive documents\test_django\maskRCNN_for_fish.py"
 python -m image_labelling_tool.flask_labeller --images_dir "C:\Users\JR13\OneDrive - CEFAS\My onedrive documents\test_django\stills"

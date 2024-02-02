@@ -115,7 +115,7 @@ class FishDataset(utils.Dataset):
         class_ids = np.ones([len(image_info["polygons"])], dtype=np.int32)
         for i, polygon in enumerate(image_info["polygons"]):
             # Extract polygon coordinates
-            rr, cc = skimage.draw.polygon(np.array(polygon)[:, 0], np.array(polygon)[:, 1])
+            cc, rr = skimage.draw.polygon(np.array(polygon)[:, 0], np.array(polygon)[:, 1])
             # Ensure coordinates are within image bounds
             rr = np.clip(rr, 0, image_info["height"] - 1)
             cc = np.clip(cc, 0, image_info["width"] - 1)
