@@ -9,7 +9,7 @@ import cv2
 import matplotlib
 import matplotlib.pyplot as plt
 
-# Root directory of the project
+# Root directory of the project 
 ROOT_DIR = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/maskrcnn/") # C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/maskrcnn/   frames output_masks
 
 # Import Mask RCNN
@@ -51,8 +51,8 @@ class FishDataset(utils.Dataset):
         self.num_train = 0  # Initialize as an instance variable
     def load_fish_dataset(self, dataset_dir, subsetsubfolder, split_ratio=0.8, is_training=True):
         # Add classes (adjust based on your dataset)
-        self.add_class("fish", 1, "fish")
-        self.add_class("other", 2, "other")
+        self.add_class("FishNotFish", 1, "fish")
+        self.add_class("FishNotFish", 2, "other")
         # Define data directory
         data_dir = os.path.join(dataset_dir, subsetsubfolder)
         # List all files in the data directory
@@ -85,7 +85,7 @@ class FishDataset(utils.Dataset):
             else:
                 continue  # Skip this image if not in the desired split
             # Add image to dataset
-            class_name = data['labels'][0]['label_class'].lower()  # Assuming the class information is in the first label
+            class_name = [label['label_class'] for label in data['labels']]
             self.add_image(
                 class_name,
                 image_id=image_id,
@@ -112,11 +112,8 @@ class FishDataset(utils.Dataset):
         image_info = self.image_info[image_id]
         # Skip if not a 'fish' source
         valid_classes = ['fish', 'other']
-        if image_info["source"] not in valid_classes:
-            return super(self.__class__, self).load_mask(image_id)
-        masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],
-                         dtype=np.uint8)
-        class_ids = np.ones([len(image_info["polygons"])], dtype=np.int32)
+        masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],dtype=np.uint8)
+        class_ids = np.ones([len(image_info["polygons"])], dtype=np.int32) # This needs to load the polygon of the class, not just the polygon
         for i, polygon in enumerate(image_info["polygons"]):
             # Extract polygon coordinates
             cc, rr = skimage.draw.polygon(np.array(polygon)[:, 0], np.array(polygon)[:, 1])
