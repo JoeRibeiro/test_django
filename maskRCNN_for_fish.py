@@ -175,7 +175,7 @@ model = modellib.MaskRCNN(mode="inference", config=inference_config, model_dir=M
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_fish.h5")
 model.load_weights(model_path, by_name=True)
 
-image_id = random.choice(dataset_test.image_ids)
+image_id = np.random.choice(dataset_test.image_ids)
 original_image, image_meta, gt_class_id, gt_bbox, gt_mask =\
     modellib.load_image_gt(dataset_test, inference_config,image_id, use_mini_mask=False)
 
