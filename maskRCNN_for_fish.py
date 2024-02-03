@@ -120,7 +120,7 @@ class FishDataset(utils.Dataset):
             # Set pixels inside the polygon to 1
             masks[rr, cc, i] = 1
         masks = masks.astype(np.uint8)
-        return masks, class_ids
+        return masks, np.array(class_ids)
 
 # Example usage
 dataset_dir = "C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/stills"
