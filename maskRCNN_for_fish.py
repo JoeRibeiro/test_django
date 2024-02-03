@@ -53,6 +53,7 @@ class FishDataset(utils.Dataset):
         # Add classes (adjust based on your dataset)
         self.add_class("FishNotFish", 1, "fish")
         self.add_class("FishNotFish", 2, "other")
+        self.add_class("FishNotFish", 3, "null")
         # Define data directory
         data_dir = os.path.join(dataset_dir, subsetsubfolder)
         # List all files in the data directory
@@ -85,7 +86,8 @@ class FishDataset(utils.Dataset):
             else:
                 continue  # Skip this image if not in the desired split
             # Add image to dataset
-            class_name = [label['label_class'] for label in data['labels']]
+            # Replace null labels with the string "null"
+            class_name = [label['label_class'] if label['label_class'] is not None else "null" for label in data['labels']]
             self.add_image(
                 "FishNotFish",
                 classes = class_name,
@@ -200,7 +202,7 @@ class TrainingConfig(Config):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 2
     # Number of classes (including background)
-    NUM_CLASSES = 1 + nclasses  # background + n fish
+    NUM_CLASSES = 2 + nclasses  # background , null + n fish
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
     IMAGE_MIN_DIM = 800
