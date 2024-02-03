@@ -99,21 +99,18 @@ class FishDataset(utils.Dataset):
         polygons = []
         for label in labels:
             class_name = label.get('label_class')  # Use get to handle null gracefully
-            valid_classes = ['fish', 'other']
-            if class_name and class_name.lower() in valid_classes:
-                # Extract polygon coordinates
-                regions = label.get('regions', [])  # Empty list if 'regions' is not present
-                for region in regions:
-                    polygon = [(int(pt['x']), int(pt['y'])) for pt in region]
-                    polygons.append(polygon)
+            # Extract polygon coordinates
+            regions = label.get('regions', [])  # Empty list if 'regions' is not present
+            for region in regions:
+                polygon = [(int(pt['x']), int(pt['y'])) for pt in region]
+                polygons.append(polygon)
         return polygons
     def load_mask(self, image_id):
         # Override this method to load pixel-wise masks
         image_info = self.image_info[image_id]
         # Skip if not a 'fish' source
-        valid_classes = ['fish', 'other']
         masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],dtype=np.uint8)
-        class_ids = np.ones([len(image_info["polygons"])], dtype=np.int32) # This needs to load the polygon of the class, not just the polygon
+        class_ids = image_info["source"]
         for i, polygon in enumerate(image_info["polygons"]):
             # Extract polygon coordinates
             cc, rr = skimage.draw.polygon(np.array(polygon)[:, 0], np.array(polygon)[:, 1])
