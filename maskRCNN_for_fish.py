@@ -87,7 +87,8 @@ class FishDataset(utils.Dataset):
             # Add image to dataset
             class_name = [label['label_class'] for label in data['labels']]
             self.add_image(
-                class_name,
+                "FishNotFish",
+                classes = class_name,
                 image_id=image_id,
                 path=image_path,
                 width=width,
@@ -108,9 +109,9 @@ class FishDataset(utils.Dataset):
     def load_mask(self, image_id):
         # Override this method to load pixel-wise masks
         image_info = self.image_info[image_id]
-        # Skip if not a 'fish' source
         masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],dtype=np.uint8)
-        class_ids = image_info["source"]
+        class_ids = [self.class_names.index(cls) for cls in image_info["classes"]]
+        class_ids = np.array(class_ids)
         for i, polygon in enumerate(image_info["polygons"]):
             # Extract polygon coordinates
             cc, rr = skimage.draw.polygon(np.array(polygon)[:, 0], np.array(polygon)[:, 1])
