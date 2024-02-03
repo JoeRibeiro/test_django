@@ -110,8 +110,7 @@ class FishDataset(utils.Dataset):
         # Override this method to load pixel-wise masks
         image_info = self.image_info[image_id]
         masks = np.zeros([image_info["height"], image_info["width"], len(image_info["polygons"])],dtype=np.uint8)
-        class_ids = [self.class_names.index(cls) for cls in image_info["classes"]]
-        class_ids = np.array(class_ids)
+        class_ids = [self.class_names.index(cls) for cls in image_info["classes"] if cls in self.class_names]
         for i, polygon in enumerate(image_info["polygons"]):
             # Extract polygon coordinates
             cc, rr = skimage.draw.polygon(np.array(polygon)[:, 0], np.array(polygon)[:, 1])
