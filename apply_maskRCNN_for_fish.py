@@ -13,17 +13,18 @@ import matplotlib.pyplot as plt
 import cv2
 from tqdm import tqdm
 
-ROOT_DIR_0 = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/")
-ROOT_DIR = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/maskrcnn/")
-MODEL_DIR = os.path.join(ROOT_DIR, "logs")
-COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
+ROOT_DIR = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/")
+SUBFOLDER = ""
+STILLS_DIR = os.path.join(ROOT_DIR, "stills")
+VIDEO_DIR = os.path.join(ROOT_DIR, "videos")
 IMAGE_DIR = os.path.join(ROOT_DIR, "images")
-VIDEO_OUT_DIR = os.path.join(ROOT_DIR_0, "processed_videos")
-VIDEO_IN_DIR = os.path.join(ROOT_DIR_0, "videos")
-dataset_dir = "C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/stills"
+MASKRCNN_DIR = os.path.join(ROOT_DIR, "maskrcnn")
+LOGS_DIR = os.path.join(MASKRCNN_DIR, "logs")
+COCO_MODEL_PATH = os.path.join(MASKRCNN_DIR, "mask_rcnn_coco.h5")
+VIDEO_OUT_DIR = os.path.join(ROOT_DIR, "processed_videos")
+MODEL_DIR = os.path.join(MASKRCNN_DIR, "logs")
+dataset_dir = STILLS_DIR
 subsetsubfolder = ""
-
-
 
 def get_unique_classes(dataset_dir, subsetsubfolder):
     data_dir = os.path.join(dataset_dir, subsetsubfolder)
@@ -104,8 +105,8 @@ def process_video(video_path, output_path, num_frames=None):
     out.release()
     cv2.destroyAllWindows()
 
-video_files = [f for f in os.listdir(VIDEO_IN_DIR) if f.endswith('.MP4')]
+video_files = [f for f in os.listdir(VIDEO_DIR) if f.endswith('.MP4')]
 for video_file in video_files:
-    video_path = os.path.join(VIDEO_IN_DIR, video_file)
+    video_path = os.path.join(VIDEO_DIR, video_file)
     output_path = os.path.join(VIDEO_OUT_DIR, f"output_{video_file}")
     process_video(video_path, output_path, num_frames = 10)

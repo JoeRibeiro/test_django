@@ -13,14 +13,18 @@ import matplotlib.pyplot as plt
 import cv2
 from tqdm import tqdm
 
-ROOT_DIR_0 = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/")
-ROOT_DIR = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/maskrcnn/")
-MODEL_DIR = os.path.join(ROOT_DIR, "logs")
-COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
+ROOT_DIR = os.path.abspath("C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/")
+SUBFOLDER = ""
+STILLS_DIR = os.path.join(ROOT_DIR, "stills")
+VIDEO_DIR = os.path.join(ROOT_DIR, "videos")
 IMAGE_DIR = os.path.join(ROOT_DIR, "images")
-VIDEO_OUT_DIR = os.path.join(ROOT_DIR_0, "processed_videos")
-VIDEO_IN_DIR = os.path.join(ROOT_DIR_0, "videos")
-
+MASKRCNN_DIR = os.path.join(ROOT_DIR, "maskrcnn")
+LOGS_DIR = os.path.join(MASKRCNN_DIR, "logs")
+COCO_MODEL_PATH = os.path.join(MASKRCNN_DIR, "mask_rcnn_coco.h5")
+VIDEO_OUT_DIR = os.path.join(ROOT_DIR, "processed_videos")
+MODEL_DIR = os.path.join(MASKRCNN_DIR, "logs")
+dataset_dir = STILLS_DIR
+subsetsubfolder = ""
 
 class FishDataset(utils.Dataset):
     def __init__(self):
