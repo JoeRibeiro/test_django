@@ -23,6 +23,8 @@ VIDEO_IN_DIR = os.path.join(ROOT_DIR_0, "videos")
 dataset_dir = "C:/Users/JR13/OneDrive - CEFAS/My onedrive documents/test_django/stills"
 subsetsubfolder = ""
 
+
+
 def get_unique_classes(dataset_dir, subsetsubfolder):
     data_dir = os.path.join(dataset_dir, subsetsubfolder)
     json_files = [f for f in os.listdir(data_dir) if f.endswith('.json') and f != 'schema.json']
@@ -51,6 +53,9 @@ class TrainingConfig(Config):
     STEPS_PER_EPOCH = 100
     VALIDATION_STEPS = 5
 
+config = TrainingConfig()
+
+
 class InferenceConfig(TrainingConfig):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
@@ -65,19 +70,6 @@ model = modellib.MaskRCNN(mode="inference", config=inference_config, model_dir=M
 # Load the weights from the saved model file
 model.load_weights(os.path.join(MODEL_DIR, "mask_rcnn_fish.h5"), by_name=True)
 
-image_ids = np.random.choice(dataset_test.image_ids, 10)
-APs = []
-for image_id in image_ids:
-    image, image_meta, gt_class_id, gt_bbox, gt_mask =\
-        modellib.load_image_gt(dataset_test, inference_config,image_id, use_mini_mask=False)
-    molded_images = np.expand_dims(modellib.mold_image(image, inference_config), 0)
-    results = model.detect([image], verbose=0)
-    r = results[0]
-    AP, precisions, recalls, overlaps =\
-        utils.compute_ap(gt_bbox, gt_class_id, gt_mask, r["rois"], r["class_ids"], r["scores"], r['masks'])
-    APs.append(AP)
-
-print("mAP: ", np.mean(APs))
 
 
 def process_video(video_path, output_path, num_frames=None):
@@ -90,27 +82,27 @@ def process_video(video_path, output_path, num_frames=None):
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     if num_frames is not None:
         frame_count = min(frame_count, num_frames)
+    # Generate consistent random colors for each class
+    class_colors = {class_id: tuple(np.random.randint(0, 256, 3, dtype=np.uint8)) for class_id in range(config.NUM_CLASSES)}
     for _ in tqdm(range(frame_count), desc="Processing frames"):
         ret, frame = cap.read()
         if not ret:
             break
         results = model.detect([frame], verbose=0)
         r = results[0]
-        # Draw bounding boxes
+        # Draw bounding boxes and masks with class-specific colors
         for i in range(r['rois'].shape[0]):
-            color = (0, 255, 0)  # Green color for bounding boxes
+            class_id = r['class_ids'][i]
+            color = class_colors[class_id]
+            color = tuple(map(int, color))
             box = r['rois'][i]
             cv2.rectangle(frame, (box[1], box[0]), (box[3], box[2]), color, 2)
-        # Draw masks
-        for i in range(r['masks'].shape[2]):
             mask = r['masks'][:, :, i]
-            color = np.random.randint(0, 256, (1, 3), dtype=np.uint8)
-            frame[mask > 0] = frame[mask > 0] * 0.5 + color * 0.5
+            frame[mask > 0] = frame[mask > 0] * 0.5 * 0.5
         out.write(frame)
     cap.release()
     out.release()
     cv2.destroyAllWindows()
-
 
 video_files = [f for f in os.listdir(VIDEO_IN_DIR) if f.endswith('.MP4')]
 for video_file in video_files:
