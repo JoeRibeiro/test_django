@@ -109,4 +109,4 @@ video_files = [f for f in os.listdir(VIDEO_DIR) if f.endswith('.MP4')]
 for video_file in video_files:
     video_path = os.path.join(VIDEO_DIR, video_file)
     output_path = os.path.join(VIDEO_OUT_DIR, f"output_{video_file}")
-    process_video(video_path, output_path, num_frames = 10)
+    process_video(video_path, output_path, num_frames = 500)
