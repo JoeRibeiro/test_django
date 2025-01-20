@@ -1,3 +1,6 @@
+This repository was an exploration to train a Mask-RCNN model on a few annotations of fish which I labelled personally in the django labeller made by the University of East Anglia, it was not funded under any specific project and consequently I am leaving it open.
+
+
 Set up environment with
 conda env create -f environment.yml
 
